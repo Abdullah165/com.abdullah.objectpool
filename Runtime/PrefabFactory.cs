@@ -1,16 +1,19 @@
 using UnityEngine;
 
-public class PrefabFactory<T> : IFactory<T> where T : Component
+namespace AdvancedObjectPooling
 {
-    private readonly T _prefab;
-
-    public PrefabFactory(T prefab)
+    public class PrefabFactory<T> : IFactory<T> where T : Component
     {
-        _prefab = prefab;
-    }
+        private readonly T _prefab;
 
-    public T Create()
-    {
-        return Object.Instantiate(_prefab);
+        public PrefabFactory(T prefab)
+        {
+            _prefab = prefab;
+        }
+
+        public T Create()
+        {
+            return Object.Instantiate(_prefab);
+        }
     }
 }
