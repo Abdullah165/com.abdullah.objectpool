@@ -4,7 +4,7 @@ A highly scalable, generic object pooling system built on `UnityEngine.Pool`. Th
 
 ## Features
 
-* **Zero Garbage Collection:** Prevents FPS drops and lag spikes during heavy gameplay.
+* **Zero Runtime Allocations: Pre-warms memory to eliminate Instantiate/Destroy GC spikes and prevent frame drops during heavy gameplay.
 * **Completely Generic:** Uses `Dictionary<Type, object>` so you don't need to write separate pooling scripts for different objects.
 * **Factory Pattern Driven:** Decouples the instantiation logic from the memory management logic.
 * **Plug & Play:** Drop it into any project and start pooling instantly.
@@ -25,8 +25,8 @@ Here is a complete example showing how to initialize the pool in your manager, a
 
 ```csharp
 using UnityEngine;
+using AdvancedObjectPooling;
 
-// 1. Initialize the Pool
 public class GameManager : MonoBehaviour
 {
     [SerializeField] private Bullet _bulletPrefab;
@@ -38,7 +38,10 @@ public class GameManager : MonoBehaviour
     }
 }
 
-// 2. Spawn Objects
+
+using UnityEngine;
+using AdvancedObjectPooling;
+
 public class Weapon : MonoBehaviour
 {
     public void Shoot()
@@ -49,7 +52,9 @@ public class Weapon : MonoBehaviour
     }
 }
 
-// 3. Return Objects
+using UnityEngine;
+using AdvancedObjectPooling;
+
 public class Bullet : MonoBehaviour
 {
     private void OnCollisionEnter(Collision collision)
