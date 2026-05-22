@@ -4,7 +4,7 @@ A highly scalable, generic object pooling system built on `UnityEngine.Pool`. Th
 
 ## Features
 
-* Zero Runtime Allocations: Pre-warms memory to eliminate Instantiate/Destroy GC spikes and prevent frame drops during heavy gameplay.
+* **Eliminates GC Spikes:** Pre-warms object memory to prevent frequent `Instantiate` and `Destroy` overhead during intensive gameplay loops.
 * **Completely Generic:** Uses `Dictionary<Type, object>` so you don't need to write separate pooling scripts for different objects.
 * **Factory Pattern Driven:** Decouples the instantiation logic from the memory management logic.
 * **Plug & Play:** Drop it into any project and start pooling instantly.
@@ -24,6 +24,7 @@ You can install this tool directly into your Unity project using the Package Man
 Here is a complete example showing how to initialize the pool in your manager, ask for an object when shooting, and return the object upon collision.
 
 ```csharp
+
 using UnityEngine;
 using AdvancedObjectPooling;
 
@@ -51,6 +52,7 @@ public class Weapon : MonoBehaviour
         newBullet.transform.position = transform.position;
     }
 }
+
 
 using UnityEngine;
 using AdvancedObjectPooling;
