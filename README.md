@@ -4,7 +4,7 @@ A highly scalable, generic object pooling system built on `UnityEngine.Pool`. Th
 
 ## Features
 
-* **Zero Runtime Allocations: Pre-warms memory to eliminate Instantiate/Destroy GC spikes and prevent frame drops during heavy gameplay.
+* Zero Runtime Allocations: Pre-warms memory to eliminate Instantiate/Destroy GC spikes and prevent frame drops during heavy gameplay.
 * **Completely Generic:** Uses `Dictionary<Type, object>` so you don't need to write separate pooling scripts for different objects.
 * **Factory Pattern Driven:** Decouples the instantiation logic from the memory management logic.
 * **Plug & Play:** Drop it into any project and start pooling instantly.
