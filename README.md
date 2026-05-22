@@ -1,74 +1,65 @@
-\# Advanced Object Pooling for Unity 
-
-
+# Advanced Object Pooling for Unity
 
 A highly scalable, generic object pooling system built on `UnityEngine.Pool`. This package uses the Factory Pattern and Type Abstraction to manage all your prefabs (Bullets, Enemies, UI, etc.) through a single, centralized manager.
 
+## Features
 
+* **Zero Garbage Collection:** Prevents FPS drops and lag spikes during heavy gameplay.
+* **Completely Generic:** Uses `Dictionary<Type, object>` so you don't need to write separate pooling scripts for different objects.
+* **Factory Pattern Driven:** Decouples the instantiation logic from the memory management logic.
+* **Plug & Play:** Drop it into any project and start pooling instantly.
 
-\## Features
-
-\* \*\*Zero Garbage Collection:\*\* Prevents FPS drops and lag spikes during heavy gameplay.
-
-\* \*\*Completely Generic:\*\* Uses `Dictionary<Type, object>` so you don't need to write separate pooling scripts for different objects.
-
-\* \*\*Factory Pattern Driven:\*\* Decouples the instantiation logic from the memory management logic.
-
-\* \*\*Plug \& Play:\*\* Drop it into any project and start pooling instantly.
-
-
-
-\##  Installation (Unity Package Manager)
-
-
+## Installation (Unity Package Manager)
 
 You can install this tool directly into your Unity project using the Package Manager.
 
+1. Open Unity and go to **Window > Package Manager**.
+2. Click the **+** icon in the top left and select **Add package from git URL...**
+3. Paste the following link and click Add:
 
+`https://github.com/Abdullah165/com.abdullah.objectpool.git`
 
-1\. Open Unity and go to \*\*Window > Package Manager\*\*.
+## Quick Start Guide
 
-2\. Click the \*\*+\*\* icon in the top left and select \*\*Add package from git URL...\*\*
-
-3\. Paste the following link and click Add:
-
-&#x20;  `https://github.com/Abdullah165/Advanced-Object-Pooling.git`
-
-
-
-\##  Quick Start Guide
-
-
-
-\### 1. Initialize the Pool
-
-Set up your pools once (e.g., in your `GameManager`'s `Awake` method) by passing in a PrefabFactory for your specific types.
-
-
+Here is a complete example showing how to initialize the pool in your manager, ask for an object when shooting, and return the object upon collision.
 
 ```csharp
-
 using UnityEngine;
 
-
-
+// 1. Initialize the Pool
 public class GameManager : MonoBehaviour
-
 {
+    [SerializeField] private Bullet _bulletPrefab;
 
-&#x20;   \[SerializeField] private Bullet \_bulletPrefab;
-
-
-
-&#x20;   private void Awake()
-
-&#x20;   {
-
-&#x20;       var bulletFactory = new PrefabFactory<Bullet>(\_bulletPrefab);
-
-&#x20;       PoolManager.InitializePool(bulletFactory, defaultCapacity: 100, maxSize: 500);
-
-&#x20;   }
-
+    private void Awake()
+    {
+        var bulletFactory = new PrefabFactory<Bullet>(_bulletPrefab);
+        PoolManager.InitializePool(bulletFactory, defaultCapacity: 100, maxSize: 500);
+    }
 }
 
+// 2. Spawn Objects
+public class Weapon : MonoBehaviour
+{
+    public void Shoot()
+    {
+        // Ask the pool for a bullet
+        Bullet newBullet = PoolManager.Get<Bullet>();
+        newBullet.transform.position = transform.position;
+    }
+}
+
+// 3. Return Objects
+public class Bullet : MonoBehaviour
+{
+    private void OnCollisionEnter(Collision collision)
+    {
+        // Return to the pool instead of calling Destroy()
+        PoolManager.Release(this);
+    }
+}
+```
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
