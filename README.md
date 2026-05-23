@@ -1,13 +1,13 @@
 # Advanced Object Pooling for Unity
 
-A highly scalable, generic object pooling system built on `UnityEngine.Pool`. This package uses the Factory Pattern and Type Abstraction to manage all your prefabs (Bullets, Enemies, UI, etc.) through a single, centralized manager.
+A highly scalable, generic object pooling system built on `UnityEngine.Pool`. This package uses the Factory Pattern and ID-based tracking to efficiently manage all your prefabs and variants (Bullets, Enemies, UI, etc.) through a single, centralized manager.
 
 ## Features
 
-* **Eliminates GC Spikes:** Pre-warms object memory to prevent frequent `Instantiate` and `Destroy` overhead during intensive gameplay loops.
-* **Completely Generic:** Uses `Dictionary<Type, object>` so you don't need to write separate pooling scripts for different objects.
+* **Eliminates GC Spikes:** Pre-warms object memory to prevent frequent `Instantiate` and `Destroy` overhead during the runtime gameplay loop.
+* **Full Variant Support (V1.1):** Uses `Dictionary<ulong, object>` tied to `GetInstanceID()`. This allows you to pool multiple different prefabs that share the exact same script (e.g., a "FireBullet" prefab and an "IceBullet" prefab, both using `Bullet.cs`).
 * **Factory Pattern Driven:** Decouples the instantiation logic from the memory management logic.
-* **Plug & Play:** Drop it into any project and start pooling instantly.
+* **Auto-Tracking Architecture:** Pooled objects automatically remember their origin pool, allowing for a completely clean `Release()` API without needing to pass IDs back manually.
 
 ## Installation (Unity Package Manager)
 
@@ -21,39 +21,61 @@ You can install this tool directly into your Unity project using the Package Man
 
 ## Quick Start Guide
 
-Here is a complete example showing how to initialize the pool in your manager, ask for an object when shooting, and return the object upon collision.
+Here is a complete example showing how to initialize multiple variants of a pool, ask for a specific variant when shooting, and return the object seamlessly.
+
+### 1. Initialization (Game Manager)
+Pass the prefab's instance ID to create unique pools for different prefabs sharing the same script.
 
 ```csharp
-
 using UnityEngine;
 using AdvancedObjectPooling;
 
 public class GameManager : MonoBehaviour
 {
-    [SerializeField] private Bullet _bulletPrefab;
+    [SerializeField] private Bullet _fireBulletPrefab;
+    [SerializeField] private Bullet _iceBulletPrefab;
 
     private void Awake()
     {
-        var bulletFactory = new PrefabFactory<Bullet>(_bulletPrefab);
-        PoolManager.InitializePool(bulletFactory, defaultCapacity: 100, maxSize: 500);
+        // Initialize Fire Bullets
+        var fireFactory = new PrefabFactory<Bullet>(_fireBulletPrefab);
+        ulong fireId = (ulong)_fireBulletPrefab.GetInstanceID();
+        PoolManager.InitializePool(fireId, fireFactory, defaultCapacity: 100, maxSize: 500);
+
+        // Initialize Ice Bullets (Same script, completely separate pool!)
+        var iceFactory = new PrefabFactory<Bullet>(_iceBulletPrefab);
+        ulong iceId = (ulong)_iceBulletPrefab.GetInstanceID();
+        PoolManager.InitializePool(iceId, iceFactory, defaultCapacity: 100, maxSize: 500);
     }
 }
+```
 
+### 2. Spawning (Weapon)
+The spawner keeps a reference to the prefab to know exactly which ID to request from the manager.
 
+```csharp
 using UnityEngine;
 using AdvancedObjectPooling;
 
 public class Weapon : MonoBehaviour
 {
+    [SerializeField] private Bullet _equippedBulletPrefab;
+
     public void Shoot()
     {
-        // Ask the pool for a bullet
-        Bullet newBullet = PoolManager.Get<Bullet>();
+        // Ask the pool for this specific prefab variant
+        ulong bulletId = (ulong)_equippedBulletPrefab.GetInstanceID();
+        Bullet newBullet = PoolManager.Get<Bullet>(bulletId);
+        
         newBullet.transform.position = transform.position;
     }
 }
+```
 
+### 3. Releasing (Bullet)
+Because the `PoolManager` automatically handles ID tracking under the hood, your gameplay scripts remain completely agnostic to the dictionary mechanics.
 
+```csharp
 using UnityEngine;
 using AdvancedObjectPooling;
 
@@ -61,7 +83,8 @@ public class Bullet : MonoBehaviour
 {
     private void OnCollisionEnter(Collision collision)
     {
-        // Return to the pool instead of calling Destroy()
+        // Simply return to the pool instead of calling Destroy(). 
+        // The manager handles the routing!
         PoolManager.Release(this);
     }
 }
