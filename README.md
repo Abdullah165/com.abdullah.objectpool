@@ -61,13 +61,28 @@ public class Weapon : MonoBehaviour
 {
     [SerializeField] private Bullet _equippedBulletPrefab;
 
+    private void Update()
+    {
+        if (Input.GetButtonDown("Fire1"))
+        {
+            Shoot();
+        }
+    }
+
     public void Shoot()
     {
-        // Ask the pool for this specific prefab variant
         ulong bulletId = (ulong)_equippedBulletPrefab.GetInstanceID();
         Bullet newBullet = PoolManager.Get<Bullet>(bulletId);
         
-        newBullet.transform.position = transform.position;
+        newBullet.transform.position = transform.position + transform.forward;
+        newBullet.transform.rotation = transform.rotation;
+
+        Rigidbody rb = newBullet.GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            rb.linearVelocity = Vector3.zero;
+            rb.AddForce(transform.forward * 20, ForceMode.Impulse);
+        }
     }
 }
 ```
